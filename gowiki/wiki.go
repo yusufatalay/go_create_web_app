@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -15,40 +14,25 @@ type Page struct { // this struct shows how a page is stored in memory
 	Body  []byte
 }
 
-// global variable for template caching
-var templates = template.Must(template.ParseFiles("edit.html", "view.html"))
-
-// to prevent path traversal bug create a regex
-var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
-
 func (p *Page) save() error { //save method can be used for saing the page to the persisten memory
 	filename := p.Title + ".txt"                    // name the save file same with the page title
 	return ioutil.WriteFile(filename, p.Body, 0600) // give read permission to current user only
-}
-
-// validate the given URL
-func getTitle(w http.ResponseWriter, r *http.Request) (string, error) {
-	m := validPath.FindStringSubmatch(r.URL.Path)
-	if m == nil {
-		// no match
-		http.NotFound(w, r)
-		return "", errors.New("Invalid Page Title")
-	}
-	return m[2], nil // second group of regex contains the title
 }
 
 func loadPage(title string) (*Page, error) {
 	filename := title + ".txt"
 	body, err := ioutil.ReadFile(filename) // read the file which given as parameter and store the content to body variable
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 
-	} else {
-
-		return &Page{Title: title, Body: body}, nil // return a pointer to the Page readed from the file
 	}
+
+	return &Page{Title: title, Body: body}, nil // return a pointer to the Page readed from the file
+
 }
+
+// global variable for template caching
+var templates = template.Must(template.ParseFiles("edit.html", "view.html"))
 
 // since we are repeating the same code in edit/view functions its better to create a new function
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
@@ -90,6 +74,9 @@ func saveHandler(w http.ResponseWriter, r *http.Request, title string) {
 	}
 	http.Redirect(w, r, "/view/"+title, http.StatusFound)
 }
+
+// to prevent path traversal bug create a regex
+var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
 
 // wrapper function for these 3 handler function so they won't repeat each other
 func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
