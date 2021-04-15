@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"regexp"
 )
 
@@ -14,14 +16,19 @@ type Page struct { // this struct shows how a page is stored in memory
 	Body  []byte
 }
 
+// Should define the cwd for loading and saving data to spesific&different folders
+var wd, _ = os.Getwd()
+
 func (p *Page) save() error { //save method can be used for saing the page to the persisten memory
-	filename := p.Title + ".txt"                    // name the save file same with the page title
-	return ioutil.WriteFile(filename, p.Body, 0600) // give read permission to current user only
+	filename := p.Title + ".txt"                // name the save file same with the page title
+	path := wd + "/data/" + filename            // save the page to data folder
+	return ioutil.WriteFile(path, p.Body, 0600) // give read permission to current user only
 }
 
 func loadPage(title string) (*Page, error) {
 	filename := title + ".txt"
-	body, err := ioutil.ReadFile(filename) // read the file which given as parameter and store the content to body variable
+	path := wd + "/data/" + filename   //load the page from data folder
+	body, err := ioutil.ReadFile(path) // read the file which given as parameter and store the content to body variable
 	if err != nil {
 		return nil, err
 
@@ -32,12 +39,13 @@ func loadPage(title string) (*Page, error) {
 }
 
 // global variable for template caching
-var templates = template.Must(template.ParseFiles("edit.html", "view.html"))
+var templates = template.Must(template.ParseFiles(wd+"/tmpl/edit.html", wd+"/tmpl/view.html"))
 
 // since we are repeating the same code in edit/view functions its better to create a new function
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
-	err := templates.ExecuteTemplate(w, tmpl+".html", p)
+	err := templates.ExecuteTemplate(w, tmpl+".html", p) // get the templates from tmpl folder
 	if err != nil {
+		fmt.Println("error here")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
