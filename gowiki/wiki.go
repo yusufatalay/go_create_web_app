@@ -53,7 +53,6 @@ func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
 func viewHandler(w http.ResponseWriter, r *http.Request, title string) {
 
 	p, err := loadPage(title) // html/template make that stuff error free
-
 	if err != nil {
 		http.Redirect(w, r, "/edit/"+title, http.StatusFound) // if requested page is not found then redirect to edit page to create it
 		return
@@ -83,6 +82,13 @@ func saveHandler(w http.ResponseWriter, r *http.Request, title string) {
 	http.Redirect(w, r, "/view/"+title, http.StatusFound)
 }
 
+// redirect the user from root to FrontPage
+func rootHandler(w http.ResponseWriter, r *http.Request, title string) {
+	http.Redirect(w, r, "view/FrontPage", http.StatusFound)
+	return
+
+}
+
 // to prevent path traversal bug create a regex
 var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
 
@@ -90,7 +96,12 @@ var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
 func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		m := validPath.FindStringSubmatch(r.URL.Path)
+		// Instead of editing the regex , i just put an exception here
 		if m == nil {
+			if r.URL.Path == "/" {
+				fn(w, r, "")
+				return
+			}
 			// no match
 			http.NotFound(w, r)
 			return
@@ -105,7 +116,7 @@ func main() {
 	//	p1.save()
 	//	p2, _ := loadPage("Test1")
 	////	fmt.Println(string(p2.Body))
-
+	http.HandleFunc("/", makeHandler(rootHandler))
 	http.HandleFunc("/view/", makeHandler(viewHandler))
 	http.HandleFunc("/edit/", makeHandler(editHandler))
 	http.HandleFunc("/save/", makeHandler(saveHandler))
