@@ -1,6 +1,35 @@
-<h1>Editing {{.Title}}</h1>
+<html>
+  <head>
+    <style>
+      .container {
+        margin: auto;
+        width: 35%;
+        margin-top: 10%;
+      }
+      input {
+        height: 3em;
+        width: 12em;
+        border: 0;
+        border-radius: 0;
+        background-color: lightblue;
+        color: gray;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Editing {{.Title}}</h1>
 
-<form action="/save/{{.Title}}" method="POST">
-    <div><textarea name="body" rows="20" cols="80">{{printf "%s" .Body}}</textarea></div>
-    <div><input type="submit" value="Save"/></div>
-</form>
+      <form action="/save/{{.Title}}" method="POST">
+        <div>
+          <textarea name="body" rows="20" cols="80">
+{{printf "%s" .Body}}</textarea
+          >
+        </div>
+        <div style="text-align: center">
+          <input type="submit" value="Save" />
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

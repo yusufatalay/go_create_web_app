@@ -1,3 +1,31 @@
-<h1>{{.Title}}</h1>
-<p>[<a href="/edit/{{.Title}}">edit</a>]</p>
-<div>{{printf "%s" .Body}}</div>
+<html>
+  <head>
+    <style>
+      .container {
+        margin: auto;
+        width: 35%;
+        margin-top: 10%;
+      }
+      button {
+        height: 3em;
+            width: 12em;
+            border: 0;
+            border-radius: 0;
+            background-color: lightblue;
+            color: gray;
+      }
+      a {
+        font-size: 21px;
+        text-decoration: none;
+        color: gray;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 style="text-align: center">{{.Title}}</h1>
+      <div class="text">{{printf "%s" .Body}}</div>
+      <div style="text-align:center;"><button><a href="/edit/{{.Title}}">Edit</a></button></div>
+    </div>
+  </body>
+</html>
